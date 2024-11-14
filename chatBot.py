@@ -32,10 +32,10 @@ def get_response_from_openai(prompt):
             model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": f"Always answer in the language in which the question is asked, and always end your answer with a related emoji: {prompt}"}
+                {"role": "user", "content": f"Always answer in the language in which the question is asked, and always end your answer with a related emoji, and your answers should always be in context of Data Science: {prompt}"}
             ],
             max_tokens=150,
-            temperature=1
+            temperature=0
         )
         generated_text = response['choices'][0]['message']['content'].strip()
         return generated_text
