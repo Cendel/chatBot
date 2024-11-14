@@ -1,0 +1,21 @@
+# Ignore virtual environment
+venv/
+
+# Ignore Streamlit configuration/cache directory
+.streamlit/
+
+# Ignore workspace settings
+*.code-workspace
+
+# Ignore image files
+*.png
+
+# Ignore Excel files
+*.xlsx
+
+# Optional: Ignore Python cache files
+__pycache__/
+*.py[cod]
+
+# Ignore environment-specific or sensitive config files
+.env
