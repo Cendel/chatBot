@@ -4,15 +4,15 @@ from helpers.functions.get_QA_pool import get_QA_pool
 from helpers.functions.get_answer_from_data import get_answer_from_data
 from helpers.functions.get_answer_from_openai import get_answer_from_openai
 
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+openai.api_key = st.secrets["OPENAI_API_KEY"] 
 
-# Instructions for the AI
-max_tokens, temperature, context = 70, 0, "Data Science"
+# AI settings
+max_tokens, temperature, context, ai_model = 50, 0, "Data Science", "gpt-3.5-turbo"
                    
-system_message = {"role": "system", "content": f'''language same, 
-                                                end with emoji,
-                                                only about: {context}'''}
-
+system_message = {"role": "system", "content": f''' language same, 
+                                                    end with emoji,
+                                                    only about: {context},
+                                                    max {max_tokens} tokens '''}
 
 # Load questions and answers
 questions, answers = get_QA_pool()
@@ -30,7 +30,7 @@ if prompt := st.chat_input("Your question:"):
     st.session_state.chat_history.append({"role": "user", "content": prompt})
     answer = get_answer_from_data(prompt, questions, answers)    
     if not answer:
-        answer = get_answer_from_openai(prompt, system_message, max_tokens, temperature)  
+        answer = get_answer_from_openai(prompt, system_message, ai_model, max_tokens, temperature)  
     st.session_state.chat_history.append({"role": "assistant", "content": answer})
 
 # Display chat history
