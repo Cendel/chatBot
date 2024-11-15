@@ -7,10 +7,10 @@ from helpers.functions.get_answer_from_openai import get_answer_from_openai
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 # Instructions for the AI
-max_tokens, temperature = 70, 0
+max_tokens, temperature, context = 70, 0, "Data Science"
 message_to_ai = f'''Answer in question's language, 
                    end with a related emoji,
-                   stick to Data Science context
+                   stick to {context} context
                    within max {max_tokens} tokens,
                    10 tokens if out of context.'''
 
