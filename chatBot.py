@@ -1,70 +1,41 @@
 import streamlit as st
-import pandas as pd
 import openai
-from difflib import get_close_matches
+from helpers.functions.get_QA_pool import get_QA_pool
+from helpers.functions.get_answer_from_data import get_answer_from_data
+from helpers.functions.get_answer_from_openai import get_answer_from_openai
 
-openai.api_key = st.secrets["OPENAI_API_KEY"]  # Streamlit secrets kullanarak API anahtarını alıyoruz
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
-# uploads question-answer pool:
-try:
-    data = pd.read_excel("Mentoring_data.xlsx")
-    questions = data["Question"].tolist() if "Question" in data.columns else []
-    answers = data["Answer"].tolist() if "Answer" in data.columns else []
-    
-    if not questions or not answers:
-        st.error("Mentoring_data.xlsx dosyasındaki 'Question' veya 'Answer' sütunları eksik veya boş.")
-except Exception as e:
-    st.error(f"Error loading data file: {str(e)}")
+# Instructions for the AI
+max_tokens, temperature = 70, 0
+message_to_ai = f'''Answer in question's language, 
+                   end with a related emoji,
+                   stick to Data Science context
+                   within max {max_tokens} tokens,
+                   10 tokens if out of context.'''
 
-# matching the closest answer to the question:
-def get_answer_from_data(prompt):
-    if questions:
-        closest_match = get_close_matches(prompt, questions, n=1, cutoff=0.5)
-        if closest_match:
-            match_index = questions.index(closest_match[0])
-            return answers[match_index]
-    return None  
+# Load questions and answers
+questions, answers = get_QA_pool()
 
-# retrieves answers from OpenAI API:
-def get_response_from_openai(prompt):
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": f"Always answer in the language in which the question is asked, and always end your answer with a related emoji, and your answers should always be in context of Data Science: {prompt}"}
-            ],
-            max_tokens=150,
-            temperature=0
-        )
-        generated_text = response['choices'][0]['message']['content'].strip()
-        return generated_text
-    except Exception as e:
-        return f"Error: {str(e)}"
+# Initialize session state
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = [{"role": "system", "content": message_to_ai}]
 
-# heading:
+# Chatbot UI
 st.header("Chat with Techpro Education 🤖")
 
-# starts chat history:
-if "messages" not in st.session_state.keys():
-    st.session_state.messages = [
-        {"role": "assistant", "content": "Ask me a question about Data Science!"}
-    ]
-
-# Kullanıcı girişi ve yanıt oluşturma
+# 1- gets user input; 2- adds it to chat history; 3- search data for answer; 
+# 4- (optional) asks OpenAI; 5- adds response to chat history: 
 if prompt := st.chat_input("Your question:"):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-
-    # Önce dosyadan yanıt bulmaya çalış
-    answer = get_answer_from_data(prompt)
+    st.session_state.chat_history.append({"role": "user", "content": prompt})
+    answer = get_answer_from_data(prompt, questions, answers)    
     if not answer:
-        # Dosyada yanıt yoksa, OpenAI API'den yanıt al
-        answer = get_response_from_openai(prompt)
+        answer = get_answer_from_openai(prompt, st.session_state.chat_history, max_tokens, temperature)  
+    st.session_state.chat_history.append({"role": "assistant", "content": answer})
 
-    # Yanıtı ekrana yazdırma ve sohbet geçmişine ekleme
-    st.session_state.messages.append({"role": "assistant", "content": answer})
-
-# Önceki sohbet mesajlarını gösterme
-for message in st.session_state.messages:
+# Display chat history
+for message in st.session_state.chat_history:
+    if message["role"] == "system":  # skips system messages
+        continue
     with st.chat_message(message["role"]):
         st.write(message["content"])
