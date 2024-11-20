@@ -8,10 +8,10 @@ venv/
 *.code-workspace
 
 # Ignore image files
-*.png
-
+# .png
+assistant_icon.png
 # Ignore Excel files
-*.xlsx
+#.xlsx
 
 # Optional: Ignore Python cache files
 __pycache__/
