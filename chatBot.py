@@ -9,10 +9,13 @@ openai.api_key = st.secrets["OPENAI_API_KEY"]
 # AI settings
 max_tokens, temperature, context, ai_model = 60, 0, "Data Science", "gpt-3.5-turbo"
                    
-system_message = {"role": "system", "content": f'''full sentences in {max_tokens} tokens!
-                                                   same language, 
-                                                   with emoji,
-                                                   stick to {context}'''}
+system_message = {
+    "role": "system", 
+    "content": f'''
+full sentences in {max_tokens} tokens!
+same language,
+with emoji,
+stick to {context}'''.replace("\n", "")}
 
 # Load questions and answers
 questions, answers = get_QA_pool()
